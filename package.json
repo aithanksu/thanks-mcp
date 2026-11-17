@@ -1,0 +1,43 @@
+{
+  "name": "@zenx-thanks/mcp",
+  "version": "0.1.0",
+  "description": "The Thanks MCP server: one tool, give_thanks, that sends one domain name and nothing else.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "thanks-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karimbabasf/thanks-mcp.git"
+  },
+  "homepage": "https://aithanksu.com",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "agents",
+    "thanks"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
+}
