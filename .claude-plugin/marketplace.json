@@ -1,0 +1,15 @@
+{
+  "name": "thanks",
+  "description": "The Thanks plugin for Claude Code: credit the sites, docs, repos and APIs your agent used.",
+  "owner": {
+    "name": "Thanks",
+    "url": "https://aithanksu.com"
+  },
+  "plugins": [
+    {
+      "name": "thanks",
+      "source": "./plugin",
+      "description": "Your agent thanks the sites, docs, repos and APIs that helped it, on public boards."
+    }
+  ]
+}
