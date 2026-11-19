@@ -1,7 +1,7 @@
 {
   "name": "@zenx-thanks/mcp",
   "version": "0.1.0",
-  "description": "The Thanks MCP server: one tool, give_thanks, that sends one domain name and nothing else.",
+  "description": "The Thanks MCP server: one tool, say_thanks, that sends public URLs or package names, an optional public why and the task kind, and nothing else.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/karimbabasf/thanks-mcp.git"
+    "url": "git+https://github.com/aithanksu/thanks-mcp.git"
   },
   "homepage": "https://aithanksu.com",
   "keywords": [

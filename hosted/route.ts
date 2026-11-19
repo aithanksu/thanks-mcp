@@ -1,53 +1,53 @@
 // The hosted server's code at https://app.aithanksu.com/mcp, copied from the Thanks app (app/app/mcp/route.ts).
 // Reference only: it is not built here. Imports starting with @/ are app internals.
+import { bearer, ownerGate } from '@/lib/bearer'
 import { db } from '@/lib/db'
-import { clientIp, json, readJson } from '@/lib/http'
-import { handle, originAllowed, rpcError, text, versionAllowed, type ToolResult } from '@/lib/mcp'
-import { keyHashFromHeader, pgBytea } from '@/lib/keys'
+import { mcpOrigins } from '@/lib/hosts'
+import { clientIp, json, MAX_BODY, readJson } from '@/lib/http'
+import { pgBytea } from '@/lib/keys'
+import { handle, originAllowed, rpcError, text, versionAllowed, type Hooks } from '@/lib/mcp'
 import { resourceMetadataUrl } from '@/lib/oauth'
 import { allow } from '@/lib/redis'
-import { MAX_BODY, type Status } from '@/lib/validate'
+import { say, sayLine } from '@/lib/say'
 
-type RpcResult = { error?: 'unauthorized'; results?: { status: Status }[] }
-
-function unauthorized(tokenSent: boolean): Response {
+function unauthorized(req: Request, tokenSent: boolean): Response {
   const error = tokenSent ? 'error="invalid_token", ' : ''
-  return json({ error: 'unauthorized' }, 401, { 'www-authenticate': `Bearer ${error}resource_metadata="${resourceMetadataUrl()}"` })
+  return json({ error: 'unauthorized' }, 401, { 'www-authenticate': `Bearer ${error}resource_metadata="${resourceMetadataUrl(req)}"` })
 }
 
-/** An MCP call cannot prove the agent read the site, so it always counts as the lowest kind. */
-async function record(keyHash: Buffer, domain: string): Promise<ToolResult | 'unauthorized'> {
-  const { data, error } = await db().rpc('ingest_thanks', {
-    p_key_hash: pgBytea(keyHash),
-    p_items: [{ type: 'website', id: domain, kind: 'cited' }],
-  })
-  if (error) return text('Thanks is temporarily unavailable.', true)
-  const r = data as RpcResult
-  if (r.error === 'unauthorized') return 'unauthorized'
-  const status = r.results?.[0]?.status
-  return text(said(status, domain))
-}
-
-/** What the agent reads back. A recorded thanks reminds it of any other site that helped. */
-function said(status: Status | undefined, domain: string): string {
-  switch (status) {
-    case 'ok': return `Thanked ${domain}. If another site also helped with this task, thank it too, once each.`
-    case 'duplicate': return `${domain} is already thanked today. Nothing more to do for it.`
-    case 'opted_out': return `${domain} has opted out of Thanks. Nothing more to do for it.`
-    case 'budget': return 'Today\'s thanks limit is reached. Nothing more to do today.'
-    default: return `Not recorded for ${domain}.`
+function hooks(hash: Buffer): Hooks {
+  return {
+    async say(body) {
+      try {
+        const gate = await ownerGate(hash)
+        if (gate) return gate
+        const out = await say(hash, body)
+        return out === 'unauthorized' ? { status: 401 } : text(sayLine(out.result, out.agent))
+      } catch (e) {
+        console.error(e)
+        return text('Thanks is temporarily unavailable.', true)
+      }
+    },
+    // The client's name is a label, so a failure here never fails initialize.
+    async hello(name, version) {
+      try {
+        const { error } = await db().rpc('touch_agent', { p_key_hash: pgBytea(hash), p_client_name: name, p_client_version: version })
+        if (error) console.error(`touch_agent: ${error.message}`)
+      } catch (e) {
+        console.error(e)
+      }
+    },
   }
 }
 
 export async function POST(req: Request) {
-  if (!originAllowed(req.headers.get('origin'), process.env.SITE_URL ?? '')) {
+  if (!originAllowed(req.headers.get('origin'), mcpOrigins())) {
     return json(rpcError(null, -32600, 'origin not allowed'), 403)
   }
   if (!(await allow(`mcp-ip:${clientIp(req)}`, 120, 60))) return json(rpcError(null, -32000, 'rate limited'), 429)
 
-  const header = req.headers.get('authorization')
-  const keyHash = keyHashFromHeader(header)
-  if (!keyHash) return unauthorized(header !== null)
+  const keyHash = bearer(req)
+  if (!keyHash) return unauthorized(req, req.headers.get('authorization') !== null)
 
   if (!versionAllowed(req.headers.get('mcp-protocol-version'))) {
     return json(rpcError(null, -32600, 'unsupported MCP-Protocol-Version'), 400)
@@ -57,9 +57,10 @@ export async function POST(req: Request) {
   const body = await readJson(req, MAX_BODY)
   if (body === undefined) return json(rpcError(null, -32700, 'parse error'), 400)
 
-  const out = await handle(body, (domain) => record(keyHash, domain))
-  if (out.status === 401) return unauthorized(true)
+  const out = await handle(body, hooks(keyHash))
+  if (out.status === 401) return unauthorized(req, true)
   if (out.status === 202) return new Response(null, { status: 202 })
+  if (out.status === 429) return json(out.body, 429, { 'retry-after': String(out.retryAfter ?? 60) })
   return json(out.body, out.status)
 }
 
