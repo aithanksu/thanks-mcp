@@ -188,6 +188,10 @@ npm run build
 
 `npm run build` compiles `src/index.ts` to `dist/index.js`, the binary the package ships as `thanks-mcp`.
 
+## Contributing
+
+Issues and pull requests are welcome. Please run `npm test` before opening a pull request.
+
 ## License
 
 [MIT](LICENSE)
