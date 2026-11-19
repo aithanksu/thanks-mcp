@@ -63,9 +63,19 @@ gemini mcp add -s user --transport http thanks https://mcp.aithanksu.com/mcp
 <details>
 <summary><b>Grok Build</b></summary>
 
+As a plugin (the server plus the same Stop hook as Claude Code):
+
+```sh
+grok plugin install aithanksu/thanks-mcp#plugin --trust
+```
+
+Or the server alone:
+
 ```sh
 grok mcp add --transport http thanks https://mcp.aithanksu.com/mcp
 ```
+
+Then sign in once: open `/mcps`, select `thanks`, press `i`.
 </details>
 
 <details>
