@@ -3,7 +3,7 @@
 import { parse } from 'tldts'
 import {
   BITBUCKET_PAGES, CODEBERG_PAGES, DOCS_HOSTS, DOCS_PATHS, DOCS_RS_PAGES, DOCS_WORDS, ENGINE_KEYS, ENGINE_PATHS, ENGINE_SUBDOMAINS, GITLAB_PAGES,
-  GITLAB_SUBPAGES, GO_DEEP_HOSTS, GO_STD, KNOWN_HOSTS, PRIVATE_DOMAINS, PRIVATE_HOSTS, PRIVATE_PATHS, PUBLIC_HOSTS, SEARCH_ENGINES, SEARCH_KEYS, TOOL_HOSTS, MCP_TOKEN,
+  GITLAB_SUBPAGES, GO_DEEP_HOSTS, GO_STD, KNOWN_HOSTS, PRIVATE_DOMAINS, PRIVATE_HOSTS, PRIVATE_PATHS, PUBLIC_HOSTS, PUBLIC_PATHS_ONLY, SEARCH_ENGINES, SEARCH_KEYS, SHARE_WORDS, TOOL_HOSTS, MCP_TOKEN,
 } from './resolve-data'
 import { KIND_CATEGORY, type Kind, type Rejected, type Resolved } from './types'
 
@@ -90,11 +90,34 @@ export function resolveRef(input: unknown): Resolved | Rejected {
   if (u.username || u.password) return reject('private')
   const host = publicHost(u.hostname)
   if (typeof host !== 'string') return host
-  // Stored without port, query or fragment: tokens live there, and the key never needs them.
-  const url = `${u.protocol}//${u.hostname.replace(/\.$/, '')}${u.pathname}`
+  // Stored without port, query or fragment, where most tokens live, and the path ends before any part that
+  // still looks like one: the key never needs them.
+  const url = `${u.protocol}//${u.hostname.replace(/\.$/, '')}${safePath(u.pathname)}`
   if (url.length > MAX_REF) return reject('invalid')
   const r = byRules(stripWww(host), u)
   return 'reason' in r ? r : checked({ ...r, url })
+}
+
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+const EMAIL = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i
+
+/** A path part that is an id, a token or an email: a UUID, 16 or more characters mixing letters and digits, or an address. */
+function secretPart(seg: string): boolean {
+  if (UUID.test(seg) || EMAIL.test(seg)) return true
+  return seg.split(/[-_.~:+=,!*'()@$;]/).some((p) => p.length >= 16 && /[a-z]/i.test(p) && /\d/.test(p))
+}
+
+/**
+ * The path as it is stored: cut before the first part that looks like a secret, and before the part after a
+ * share word (/s/<id>, /share/<id>, /invite/<code>). The key is read from the whole link; only the stored url is cut.
+ */
+export function safePath(pathname: string): string {
+  const raw = pathname.split('/')
+  for (let i = 1; i < raw.length; i++) {
+    const seg = decode(raw[i])
+    if (seg && (secretPart(seg) || (i > 1 && SHARE_WORDS.has(decode(raw[i - 1]).toLowerCase())))) return raw.slice(0, i).join('/') || '/'
+  }
+  return pathname
 }
 
 /** A key's web path: the prefix and every colon after it become slashes, so mcp:smithery:x is mcp/smithery/x. Hosts and host/docs keys are their own path. */
@@ -178,7 +201,9 @@ function bareHost(s: string): string | Rejected {
     return reject('invalid')
   }
   const host = publicHost(u.hostname)
-  return typeof host === 'string' ? stripWww(host) : host
+  if (typeof host !== 'string') return host
+  const bare = stripWww(host)
+  return isPrivate(bare, []) ? reject('private') : bare
 }
 
 function shorthand(word: Word, rest: string): Named | Rejected {
@@ -274,6 +299,8 @@ function isPrivate(host: string, segs: readonly string[]): boolean {
   if (PRIVATE_HOSTS.has(host) || host.startsWith('webmail.')) return true
   if (PRIVATE_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`))) return true
   const first = segs[0]?.toLowerCase()
+  const only = PUBLIC_PATHS_ONLY[host]
+  if (only && first && !only.includes(first)) return true
   return Boolean(first && PRIVATE_PATHS[host]?.includes(first))
 }
 

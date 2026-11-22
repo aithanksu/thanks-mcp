@@ -85,7 +85,8 @@ declare
   v_day      date := (now() at time zone 'utc')::date;
   v_n        integer;
 begin
-  select private.identity_of(o.github_id, o.id) into v_identity from public.owners o where o.id = p_owner;
+  -- FOR SHARE: a github_id change (and its fold) waits for this call, and this call reads the id after it.
+  select private.identity_of(o.github_id, o.id) into v_identity from public.owners o where o.id = p_owner for share;
   if v_identity is null then
     return null;
   end if;
@@ -113,7 +114,7 @@ declare
   v_day      date := (now() at time zone 'utc')::date;
   v_n        integer;
 begin
-  select private.identity_of(o.github_id, o.id) into v_identity from public.owners o where o.id = new.owner_id;
+  select private.identity_of(o.github_id, o.id) into v_identity from public.owners o where o.id = new.owner_id for share;
   if v_identity is null then
     return new; -- no such owner: the foreign key refuses the row
   end if;
@@ -194,13 +195,17 @@ begin
     if coalesce(it.key, '') = '' or coalesce(it.name, '') = '' or coalesce(it.canonical_url, '') = '' or v_cat is null
        or char_length(it.key) > 300 or char_length(it.name) > 300 or char_length(it.canonical_url) > 2048
        or it.url is null or char_length(it.url) > 2048 or it.url !~ '^https?://[a-z0-9.-]+(/[^?#[:space:]]*)?$'
-       or (it.kind = 'site' and it.key !~ '^[a-z0-9-]+(\.[a-z0-9-]+)+$') then
+       or (it.kind in ('site', 'tool') and it.key !~ '^[a-z0-9-]+(\.[a-z0-9-]+)+$') then
       v_skip := 'invalid';
     -- Your own work under your login, in each key format that names a GitHub owner. Go module paths keep their case.
     elsif (v_self is not null and (starts_with(lower(it.key), 'github:' || v_self || '/')
                                    or starts_with(lower(it.key), 'mcp:github:' || v_self || '/')
                                    or starts_with(lower(it.key), 'mcp:io.github.' || v_self || '/')
-                                   or starts_with(lower(it.key), 'go:github.com/' || v_self || '/')))
+                                   or starts_with(lower(it.key), 'mcp:glama:@' || v_self || '/')
+                                   or starts_with(lower(it.key), 'mcp:smithery:@' || v_self || '/')
+                                   or starts_with(lower(it.key), 'go:github.com/' || v_self || '/')
+                                   or lower(it.key) = v_self || '.github.io'
+                                   or starts_with(lower(it.key), v_self || '.github.io/')))
           or v_res.claimed_by = p_owner then
       v_skip := 'self';
     elsif v_res.id is not null and exists (
@@ -218,7 +223,7 @@ begin
       if v_res.id is null then
         insert into public.resources (kind, key, category, display_name, canonical_url, type, identifier)
         values (it.kind, it.key, v_cat, it.name, it.canonical_url,
-                case when it.kind = 'site' then 'website' end, case when it.kind = 'site' then it.key end)
+                case when it.kind in ('site', 'tool') then 'website' end, case when it.kind in ('site', 'tool') then it.key end)
         on conflict (key) do nothing
         returning id, status, claimed_by into v_res;
         if v_res.id is null then

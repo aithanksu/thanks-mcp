@@ -119,7 +119,7 @@ describe('thanks MCP server', () => {
         links: {
           type: 'array', minItems: 1, maxItems: 5,
           items: { type: 'string', maxLength: 2048 },
-          description: 'Up to 5 exact public links, like https://www.npmjs.com/package/zod. Only the link is sent, without its query string or fragment.',
+          description: 'Up to 5 exact public links, like https://www.npmjs.com/package/zod. Leave out the query string and fragment: they are dropped and never stored.',
         },
       },
       required: ['links'],
@@ -161,8 +161,8 @@ describe('thanks MCP server', () => {
 
   it('keeps private hosts, IPs, credentials, file paths and other schemes on this machine', async () => {
     const local = ['localhost:3000', 'http://127.0.0.1:8080/admin', '10.0.0.1', 'http://[::1]/', '2130706433', '0x7f.1', 'printer.lan', 'http://nas.local/x',
-      'https://wiki.corp.internal/page', 'intranet', 'https://user:pw@example.com/', 'https://token@example.com/', 'http://192.168.0.1/', 'https://app.localhost/', '/Users/me/secrets.txt', './notes.md', '~/keys']
-    const invalid = ['file:///etc/passwd', 'javascript:alert(1)', 'C:\\Users\\me\\a.txt', '?q=1', 'npm:zod', 'mcp:io.github.user/server', 'ftp://example.com/x',
+      'https://wiki.corp.internal/page', 'intranet', 'https://user:pw@example.com/', 'https://token@example.com/', 'http://192.168.0.1/', 'https://app.localhost/', '/Users/me/secrets.txt', './notes.md', '~/keys', 'api:localhost', 'mcp:printer.lan']
+    const invalid = ['file:///etc/passwd', 'javascript:alert(1)', 'C:\\Users\\me\\a.txt', '?q=1', 'npm:zod x', 'ftp://example.com/x',
       'https://exa mple.com/', '']
     const r = await said(links(...local.slice(0, 5)))
     expect(r.content[0].text).toBe('Skipped 5: localhost:3000 (private), 127.0.0.1 (private), 10.0.0.1 (private), [::1] (private), 2130706433 (private).')
@@ -173,7 +173,20 @@ describe('thanks MCP server', () => {
     expect(received).toEqual([])
 
     await said(links('localhost', 'https://github.com/honojs/hono', 'npm:zod'))
-    expect(received.map((x) => x.body)).toEqual([{ links: ['https://github.com/honojs/hono'] }])
+    expect(received.map((x) => x.body)).toEqual([{ links: ['https://github.com/honojs/hono', 'npm:zod'] }])
+  })
+
+  it('sends package shorthands as typed, a Marketplace link as its extension id, and no path part that looks like a secret', async () => {
+    await said(links(
+      'npm:zod',
+      'github:honojs/hono',
+      'https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode&ssr=false',
+      'https://mcp.zapier.com/api/mcp/s/aBc123XyZ789qWe456rTy/mcp',
+      'https://example.com/share/q1w2e3',
+    ))
+    expect(received.map((x) => x.body)).toEqual([{
+      links: ['npm:zod', 'github:honojs/hono', 'vscode:esbenp.prettier-vscode', 'https://mcp.zapier.com/api/mcp/s', 'https://example.com/share'],
+    }])
   })
 
   it('still answers give_thanks {domain}, unlisted, as one link', async () => {

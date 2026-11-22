@@ -32,6 +32,8 @@ export const PRIVATE_HOSTS = new Set([
   'app.planetscale.com', 'console.neon.tech', 'cloud.mongodb.com', 'app.snowflake.com', 'app.terraform.io', 'app.circleci.com',
   'app.posthog.com', 'us.posthog.com', 'eu.posthog.com', 'app.datadoghq.com', 'app.datadoghq.eu', 'admin.shopify.com', 'appstoreconnect.apple.com',
   'app.mercury.com', 'app.gusto.com', 'app.ramp.com', 'dashboard.brex.com', 'vault.bitwarden.com',
+  // Messages, invites and short links that can point anywhere
+  'web.whatsapp.com', 'web.telegram.org', 'messenger.com', 'messages.google.com', 'discord.gg', 'g.co',
 ])
 
 /** A domain whose own host and every subdomain are private: workspaces named after a company, and tunnels to the user's own machine. */
@@ -41,11 +43,13 @@ export const PRIVATE_DOMAINS = [
   'my.salesforce.com', 'lightning.force.com', 'zoom.us', 'docsend.com', 'app.github.dev',
   'ngrok.io', 'ngrok.app', 'ngrok.dev', 'ngrok-free.app', 'ngrok-free.dev', 'trycloudflare.com', 'ts.net', 'loca.lt', 'localtunnel.me', 'serveo.net',
   'lhr.life', 'devtunnels.ms',
+  // Shared files and object storage: the path is the bucket, the file or the share token
+  'app.box.com', 'storage.googleapis.com', 'storage.cloud.google.com', 's3.amazonaws.com', 'blob.core.windows.net', 'r2.cloudflarestorage.com',
 ]
 
 /** Private under these first path segments of an otherwise public host. */
 export const PRIVATE_PATHS: Record<string, readonly string[]> = {
-  'github.com': ['settings', 'notifications', 'dashboard', 'codespaces', 'account', 'sessions', 'login', 'logout', 'password_reset', 'signup', 'new', 'pulls', 'issues', 'watching', 'copilot', 'organizations'],
+  'github.com': ['settings', 'notifications', 'dashboard', 'codespaces', 'account', 'sessions', 'login', 'logout', 'password_reset', 'signup', 'new', 'pulls', 'issues', 'watching', 'copilot', 'organizations', 'orgs', 'enterprises'],
   'gitlab.com': ['-', 'dashboard', 'profile', 'admin'],
   'codeberg.org': ['user', 'notifications', 'issues', 'pulls', 'milestones'],
   'bitbucket.org': ['account', 'dashboard'],
@@ -63,7 +67,26 @@ export const PRIVATE_PATHS: Record<string, readonly string[]> = {
   'miro.com': ['app'],
   'canva.com': ['design', 'folder', 'brand'],
   'loom.com': ['share', 'embed', 'looms', 'folder', 'record'],
+  'discord.com': ['channels', 'app', 'login', 'register', 'invite', 'oauth2'],
+  'x.com': ['messages', 'i', 'settings', 'notifications', 'home', 'compose'],
+  'twitter.com': ['messages', 'i', 'settings', 'notifications', 'home', 'compose'],
+  'linkedin.com': ['messaging', 'mynetwork', 'notifications', 'settings', 'sales', 'talent', 'feed'],
+  'facebook.com': ['messages', 'settings', 'notifications', 'friends'],
+  'instagram.com': ['direct', 'accounts'],
+  'railway.com': ['project', 'dashboard', 'account', 'workspace'],
+  'railway.app': ['project', 'dashboard', 'account', 'workspace'],
+  'fly.io': ['dashboard', 'apps', 'user', 'orgs'],
 }
+
+/** Hosts where only these first path segments (and the home page) are public: every other path is a team or project dashboard. */
+export const PUBLIC_PATHS_ONLY: Record<string, readonly string[]> = {
+  'vercel.com': ['docs', 'blog', 'templates', 'pricing', 'changelog', 'guides', 'home', 'features', 'enterprise', 'customers', 'contact', 'legal',
+    'solutions', 'products', 'ai', 'integrations', 'marketplace', 'font', 'geist', 'design', 'academy', 'careers', 'about', 'security', 'events',
+    'oss', 'kb', 'cli', 'frameworks', 'storage', 'resources', 'partners', 'ship', 'try', 'help', 'trust', 'press', 'brand', 'fluid', 'compare', 'go'],
+}
+
+/** A path part after one of these words is a share, invite or reset token: the stored path ends before it. */
+export const SHARE_WORDS = new Set(['s', 'share', 'shared', 'invite', 'invitation', 'join', 'magic', 'reset', 'verify', 'confirm', 'unsubscribe', 'token', 'tokens', 'callback'])
 
 // ---------- search result pages: no resource ----------
 

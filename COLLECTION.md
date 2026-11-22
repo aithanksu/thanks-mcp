@@ -12,7 +12,7 @@ The agent calls `say_thanks` with one argument, `links`: 1 to 5 strings. The too
 
 With the hosted server (`https://mcp.aithanksu.com/mcp`), that is the tool call's `arguments`, and your MCP client shows it to you on every call.
 
-With this stdio server, each link is reduced on your machine first (`reduce()` in `src/index.ts`): http or https only, the host in lowercase, the path, and nothing else. The query string, fragment and port are cut. A link with a user or password, a private host (`localhost`, `.local`, `.internal`, `.lan`, a single-label name) or an IP address never leaves. Then the server sends one request, and this is the whole body:
+With this stdio server, each link is reduced on your machine first (`reduce()` in `src/index.ts`): http or https only, the host in lowercase, the path, and nothing else. The query string, fragment and port are cut, and the path ends before any part that looks like a token, an id or an email (a UUID, 16 or more characters mixing letters and digits, an address, or the part after `/s/`, `/share/` or `/invite/`). A VS Code Marketplace link leaves as `vscode:<publisher>.<name>`, and a package shorthand such as `npm:zod` or `github:owner/repo` leaves as typed. A link with a user or password, a private host (`localhost`, `.local`, `.internal`, `.lan`, a single-label name) or an IP address never leaves. Then the server sends one request, and this is the whole body:
 
 ```
 POST {THANKS_ENDPOINT}/v1/thanks
@@ -33,7 +33,7 @@ One row in `public.thanks`. These are all its columns once the links contract is
 | `owner_id` | Your account. |
 | `agent_id` | Which of your agents sent it. |
 | `resource_id` | The resource the link names (its key, name, board and canonical URL live in `public.resources`). |
-| `url` | The link as stored: `https://<lowercase host><path>`, nothing more. |
+| `url` | The link as stored: `https://<lowercase host><path>`, nothing more. The path ends before any part that looks like a token, an id or an email. |
 | `used_at` | The time, to the second. |
 | `day` | The UTC day. |
 | `created_at` | The insert time. |
@@ -52,7 +52,7 @@ Next to the row: the call bumps the daily count for your GitHub identity (`priva
 - your prompts, the conversation, the agent's replies, code or files;
 - a `why`, a task kind or a task id, even from an old client that still sends them;
 - query strings and fragments;
-- IP addresses. No row in the database has one. Rate limits count requests in Redis under the first 16 hex of an HMAC of the IP, keyed from the server's secret (`ipHash` in `app/lib/http.ts`), and each count expires after its window, at most an hour.
+- IP addresses. No Thanks table has one (Supabase Auth, in the same database, records the IP of each sign-in, as the privacy policy says). Rate limits count requests in Redis under the first 16 hex of an HMAC of the IP, keyed from the server's secret (`ipHash` in `app/lib/http.ts`), and each count expires after its window, at most an hour.
 
 Until the links contract migration runs, the table still has its old `why` and `task_hash` columns. Every row written since the links expand holds null there, and the contract drops both columns and deletes every old `why`.
 
@@ -63,7 +63,7 @@ Until the links contract migration runs, the table still has its old `why` and `
 | The agent can send only links | The tool schema: `links` is the one property, `additionalProperties: false` | `hosted/mcp.ts` (app `app/lib/mcp.ts`), `src/index.ts` |
 | Links are cut on your machine | The stdio reducer, tested on the exact request body | `src/index.ts` (`reduce`), `src/index.test.ts` |
 | Old fields are dropped on arrival | `parseBody` keeps the link strings and nothing else, before anything else runs | `hosted/say.ts` (app `app/lib/say.ts`), app test `app/lib/say.test.ts` |
-| The stored URL is a bare link | The resolver cuts every link to scheme, host and path | `hosted/resolve.ts` (app `app/lib/resolve.ts`), app test `app/lib/resolve.links.test.ts` |
+| The stored URL is a bare link | The resolver cuts every link to scheme, host and path, and the path before any part that looks like a secret | `hosted/resolve.ts` (app `app/lib/resolve.ts`), app test `app/lib/resolve.links.test.ts` |
 | The database refuses anything else | `CHECK (url ~ '^https?://[a-z0-9.-]+(/[^?#[:space:]]*)?$')` on every insert, constraint `thanks_url_link` | `hosted/schema.sql` (app `supabase/migrations/20261122000000_links_expand.sql`), canary test `app/lib/links.sql.test.ts` |
 | At most 500 thanks a UTC day per GitHub identity | The `thanks_daily_cap` trigger, on every insert from any path | `hosted/schema.sql` (same migration), app test `app/lib/cap.sql.test.ts` |
 
