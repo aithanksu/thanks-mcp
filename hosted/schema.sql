@@ -50,7 +50,7 @@ create table private.identity_usage (
 );
 
 -- from supabase/migrations/20261122000000_links_expand.sql
--- New rows carry no task kind. The column stays: sealed v2 leaves hashed it, and their receipts read it.
+-- New rows carry no task kind. The column stays for the code on main until the contract; nothing new reads it.
 alter table public.thanks alter column task_kind drop not null, alter column task_kind drop default;
 
 -- from supabase/migrations/20261122000000_links_expand.sql

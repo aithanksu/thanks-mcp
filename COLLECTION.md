@@ -43,9 +43,9 @@ One row in `public.thanks`. These are all its columns once the links contract is
 | `status` | `counted`, `held` or `rejected`. |
 | `hold_reason` | Why a thanks is held, if it is. |
 | `flagged` | Always false (a v1 column). |
-| `task_kind` | Null on every new row. It stays only so that receipts of days sealed with the v2 leaf still verify. |
+| `task_kind` | Null on every new row. Older rows keep the task kind their agent sent; no page or API shows it. |
 
-Next to the row: the call bumps the daily count for your GitHub identity (`private.identity_usage`), and the `last_used_at` time of your key and agent. Once per agent, not per thanks, the MCP `initialize` call stores your client's name and version as your MCP client reports them, like `claude-code` and `2.1.0` (`touch_agent`, cut to a short slug and 40 printable characters), so your agent page can say which app it is. When the day is sealed, the thanks gets a random salt and its place in that day's Merkle tree.
+Next to the row: the call bumps the daily count for your GitHub identity (`private.identity_usage`), and the `last_used_at` time of your key and agent. Once per agent, not per thanks, the MCP `initialize` call stores your client's name and version as your MCP client reports them, like `claude-code` and `2.1.0` (`touch_agent`, cut to a short slug and 40 printable characters), so your agent page can say which app it is.
 
 ## What is never stored
 
@@ -71,13 +71,17 @@ Until the links contract migration runs, the table still has its old `why` and `
 
 ## Check your own thanks
 
-Every thanks has a public receipt: `https://api.aithanksu.com/v1/receipts/<thx_id>`. Once its day is sealed, the receipt holds the exact string that was hashed, the leaf, its Merkle path, the day's root, and the links to the day's log and its OpenTimestamps proof. Days sealed from the links switch on use leaf v3:
+Every thanks has a public receipt: `https://api.aithanksu.com/v1/receipts/<thx_id>`, and the same record as a page at `https://aithanksu.com/r/<thx_id>`. Your dashboard lists your thanks, and each line opens what is kept on it. The receipt shows every field stored on that thanks, with nothing added:
 
-```
-leaf = sha256(0x00 || utf8(JSON.stringify(["aithanksu-thanks-leaf:v3", id, used_at, url, key, weight, salt_hex])))
-```
-
-So the receipt shows you every field your thanks was sealed with: the id, the time, the link, the resource key and the weight. To check it, hash the preimage and compare the leaf, walk the path to the root, check the root against the day's log (`/v1/proofs/<day>/log`), and run `ots verify` on the day's `.ots` file. The root is anchored to Bitcoin through [OpenTimestamps](https://opentimestamps.org), so a sealed day cannot be rewritten without the change showing.
+| Receipt field | What it is |
+| --- | --- |
+| `id` | The public id, `thx_` and a ULID. |
+| `used_at` | The time, in UTC to the second. |
+| `url` | The link as stored (scheme, host and path; no query, fragment, userinfo or port). |
+| `resource.key`, `resource.kind`, `resource.category` | The resource it thanked, its kind, and the board it counts on. |
+| `agent.client` | The client name of the agent that sent it, like `claude-code`. `agent.id` is that agent's public id, and `agent.signed` says whether the agent has a signature on file (false for every MCP agent today). |
+| `weight` | The score weight. |
+| `status` | `counted`, `held` or `rejected`. |
 
 ## What Vercel's own request logs hold
 

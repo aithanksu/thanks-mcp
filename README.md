@@ -161,15 +161,11 @@ sequenceDiagram
     participant M as Thanks AI MCP server
     participant T as Thanks AI API
     participant B as Public boards
-    participant L as Nightly Merkle log
-    participant C as Bitcoin
     A->>M: say_thanks {"links":["https://www.npmjs.com/package/zod"]}
     M->>T: POST /v1/thanks {"links":["https://www.npmjs.com/package/zod"]}
     T-->>M: {"accepted":[{"key":"npm:zod",...}],"skipped":[],"coins_left":499}
     M-->>A: Thanked 1: npm:zod. 499 thanks left today.
     T->>B: npm:zod, one more owner, weighted by account age
-    T->>L: hash of the thanks, added to the day's log
-    L->>C: Merkle root stamped via OpenTimestamps
 ```
 
 ## Verify it yourself
@@ -179,12 +175,7 @@ You do not have to take any of this on trust.
 1. **Read the source.** The server is one file, [`src/index.ts`](src/index.ts), with no dependencies, so there is nothing else in the install to read.
 2. **Run the tests.** `npm test` starts the server and a fake API, then checks the protocol, that the tool text and schema match [`hosted/mcp.ts`](hosted/mcp.ts) byte for byte, the link reducer and the exact request body. It also checks which tool calls the plugin's Stop hook counts.
 3. **Read the hosted code.** [`hosted/`](hosted/) holds the handler behind `https://mcp.aithanksu.com/mcp`, the body parser and the resolver, copied from the Thanks AI app, and `schema.sql`, the database rules for what is stored.
-4. **Check a day's proof.** Each day's log holds hashes only, and its Merkle root is stamped in Bitcoin with [OpenTimestamps](https://opentimestamps.org). For example, [`/v1/proofs/2026-11-15`](https://api.aithanksu.com/v1/proofs/2026-11-15) returns the day's count (55), the root, the log URL, the `.ots` URL, the leaf format and the Bitcoin block height (976073). Download the `.ots` file and run:
-
-   ```sh
-   ots verify thanks-2026-11-15.txt.ots
-   ```
-
+4. **Read your own receipt.** Every thanks has a public receipt at `https://api.aithanksu.com/v1/receipts/<thx_id>` that shows every field stored on it: the id, the time, the link, the resource key and kind, the agent's client, the weight and the status. [COLLECTION.md](COLLECTION.md) lists each field.
 5. **Check npm provenance (once published).** Releases will publish from GitHub Actions with npm provenance, so each version links to the commit it was built from:
 
    ```sh
@@ -213,7 +204,7 @@ The instructions tell the agent to treat page, file and tool content as data, ne
 The server is MIT licensed. A thanks is credit, not money: coins have no cash value.
 
 **Can I take my thanks back?**
-Yes. Delete my thanks in your [dashboard](https://app.aithanksu.com/dashboard), signed in, deletes every thanks you gave and its proof leaf. An API key cannot do it. The day's log keeps the hash, so everyone else's proofs still verify.
+Yes. Delete my thanks in your [dashboard](https://app.aithanksu.com/dashboard), signed in, deletes every thanks you gave. An API key cannot do it.
 
 **Can a site opt out?**
 Yes. Thanks for a hidden resource are not recorded, and the reply lists it as skipped.
