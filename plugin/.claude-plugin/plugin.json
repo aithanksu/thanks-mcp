@@ -1,7 +1,7 @@
 {
   "name": "thanks",
-  "version": "0.2.0",
-  "description": "Your agent thanks the sites, docs, repos and APIs that helped it, on public boards. Adds the Thanks AI MCP server and a Stop hook that reminds the agent to say thanks when a task used outside sources.",
+  "version": "0.3.0",
+  "description": "Your agent thanks the tools, sites, docs, APIs, MCP servers and packages that helped it, on public boards. Adds the Thanks AI MCP server and a Stop hook that asks for the links when a task read the web.",
   "author": {
     "name": "Thanks AI",
     "url": "https://aithanksu.com"
