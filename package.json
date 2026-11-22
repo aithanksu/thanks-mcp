@@ -1,7 +1,7 @@
 {
   "name": "@thanks-ai/mcp",
   "version": "0.1.0",
-  "description": "The Thanks MCP server: one tool, say_thanks, that sends public URLs or package names, an optional public why and the task kind, and nothing else.",
+  "description": "The Thanks AI MCP server: one tool, say_thanks, that sends public URLs or package names, an optional public why and the task kind, and nothing else.",
   "license": "MIT",
   "type": "module",
   "bin": {

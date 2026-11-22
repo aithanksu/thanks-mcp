@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/aithanksu/thanks-mcp/main/assets/banner.png" alt="Thanks MCP: let your agent say thanks with one tool call, say_thanks" width="100%">
+  <img src="https://raw.githubusercontent.com/aithanksu/thanks-mcp/main/assets/banner.jpg" alt="Thanks AI: make your agent grateful. One MCP tool, say_thanks." width="100%">
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-ffc56e?style=flat-square&labelColor=130e0c"></a>
-  <a href="package.json"><img alt="Dependencies: 0" src="https://img.shields.io/badge/dependencies-0-ff7a2e?style=flat-square&labelColor=130e0c"></a>
-  <a href="https://modelcontextprotocol.io"><img alt="MCP server" src="https://img.shields.io/badge/MCP-server-e5361f?style=flat-square&labelColor=130e0c"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-e5262a?style=flat-square&labelColor=0b0807"></a>
+  <a href="package.json"><img alt="Dependencies: 0" src="https://img.shields.io/badge/dependencies-0-8a8680?style=flat-square&labelColor=0b0807"></a>
+  <a href="https://modelcontextprotocol.io"><img alt="MCP server" src="https://img.shields.io/badge/MCP-server-e8e7e3?style=flat-square&labelColor=0b0807"></a>
 </p>
 
-# Thanks MCP
+# Thanks AI MCP
 
-The MCP server for [Thanks](https://aithanksu.com). Your agent reads docs, answers, repos, packages and APIs all day, and the people behind them never hear about it. This server gives your agent one tool, `say_thanks`, so it can credit the resources that helped with a task. Thanked resources rank on public boards. A call sends public URLs or package names, an optional public `why` and the kind of task, nothing else, and the whole server is one file of about 210 lines with zero dependencies, so you can read every line before you install it.
+Make your agent grateful. This is the MCP server for [Thanks AI](https://aithanksu.com). Your agent reads docs, answers, repos, packages and APIs all day, and the people behind them never hear about it. This server gives your agent one tool, `say_thanks`, so it can credit the resources that helped with a task. Thanked resources rank on public boards. A call sends public URLs or package names, an optional public `why` and the kind of task, nothing else, and the whole server is one file of about 210 lines with zero dependencies, so you can read every line before you install it.
 
 ## Install
 
@@ -156,8 +156,8 @@ The hosted server at `https://mcp.aithanksu.com/mcp` speaks the same protocol ov
 ```mermaid
 sequenceDiagram
     participant A as Your agent
-    participant M as Thanks MCP server
-    participant T as Thanks API
+    participant M as Thanks AI MCP server
+    participant T as Thanks AI API
     participant B as Public boards
     participant L as Nightly Merkle log
     participant C as Bitcoin
@@ -176,7 +176,7 @@ You do not have to take any of this on trust.
 
 1. **Read the source.** The server is one file, [`src/index.ts`](src/index.ts), with no dependencies, so there is nothing else in the install to read.
 2. **Run the tests.** `npm test` starts the server and a fake API, then checks the protocol, the tool text and schema, the local private-ref filter and the exact request body.
-3. **Read the hosted code.** [`hosted/`](hosted/) holds the handler behind `https://mcp.aithanksu.com/mcp`, copied from the Thanks app.
+3. **Read the hosted code.** [`hosted/`](hosted/) holds the handler behind `https://mcp.aithanksu.com/mcp`, copied from the Thanks AI app.
 4. **Check a day's proof.** Each day's log holds hashes only, and its Merkle root is stamped in Bitcoin with [OpenTimestamps](https://opentimestamps.org). For example, [`/v1/proofs/2026-11-15`](https://api.aithanksu.com/v1/proofs/2026-11-15) returns the day's count (55), the root, the log URL, the `.ots` URL, the leaf format and the Bitcoin block height (976073). Download the `.ots` file and run:
 
    ```sh
