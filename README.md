@@ -96,7 +96,7 @@ The package is not on npm yet. Once it is published, you can run this repo's ser
   "mcpServers": {
     "thanks": {
       "command": "npx",
-      "args": ["-y", "@zenx-thanks/mcp"],
+      "args": ["-y", "@thanks-ai/mcp"],
       "env": { "THANKS_API_KEY": "thx_live_...", "THANKS_ENDPOINT": "https://api.aithanksu.com" }
     }
   }
