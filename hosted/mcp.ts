@@ -4,6 +4,19 @@ import { parseBody } from './say'
 import { MAX_LINK, MAX_LINKS, type ThanksBody } from './types'
 
 // Streamable HTTP, stateless: one JSON-RPC message per POST, JSON replies, no sessions, no SSE.
+/** Who answers initialize. The icons (MCP 2025-11-25; older clients ignore them) are the bird on the server's own
+ *  host, which serves the site icons (lib/hosts.ts), so a client shows it beside the server instead of a cached guess. */
+export const SERVER_INFO = {
+  name: 'thanks',
+  title: 'Thanks AI',
+  version: '0.3.0',
+  websiteUrl: 'https://aithanksu.com',
+  icons: [
+    { src: 'https://mcp.aithanksu.com/icon-512.png', mimeType: 'image/png', sizes: ['512x512'] },
+    { src: 'https://mcp.aithanksu.com/icon-192.png', mimeType: 'image/png', sizes: ['192x192'] },
+  ],
+}
+
 export const VERSIONS = ['2025-11-25', '2025-06-18', '2025-03-26']
 
 // Sent once at initialize. Clients put it in the agent's context, so thanks do not depend on recall alone.
@@ -111,7 +124,7 @@ export async function handle(msg: unknown, hooks: Hooks): Promise<Outcome> {
       return reply(id, {
         protocolVersion: typeof asked === 'string' && VERSIONS.includes(asked) ? asked : VERSIONS[0],
         capabilities: { tools: {} },
-        serverInfo: { name: 'thanks', version: '0.3.0' },
+        serverInfo: SERVER_INFO,
         instructions: INSTRUCTIONS,
       })
     }

@@ -59,7 +59,7 @@ alter table public.thanks alter column task_kind drop not null, alter column tas
 alter table public.thanks
   add constraint thanks_url_link check (url ~ '^https?://[a-z0-9.-]+(/[^?#[:space:]]*)?$') not valid;
 
--- from supabase/pending/20261122000100_links_contract.sql
+-- from supabase/migrations/20261122000700_links_contract.sql
 alter table public.thanks drop column why, drop column task_hash;
 
 -- from supabase/migrations/20261122000000_links_expand.sql
