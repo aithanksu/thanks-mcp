@@ -182,11 +182,14 @@ describe('thanks MCP server', () => {
       'github:honojs/hono',
       'https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode&ssr=false',
       'https://mcp.zapier.com/api/mcp/s/aBc123XyZ789qWe456rTy/mcp',
-      'https://example.com/share/q1w2e3',
+      'https://shop.example.com/orders/48213977123/items',
     ))
     expect(received.map((x) => x.body)).toEqual([{
-      links: ['npm:zod', 'github:honojs/hono', 'vscode:esbenp.prettier-vscode', 'https://mcp.zapier.com/api/mcp/s', 'https://example.com/share'],
+      links: ['npm:zod', 'github:honojs/hono', 'vscode:esbenp.prettier-vscode', 'https://mcp.zapier.com/api/mcp/s', 'https://shop.example.com/orders'],
     }])
+    received.length = 0
+    await said(links('https://example.com/share/q1w2e3', 'https://example.com/users/u12345678/settings', 'https://example.com/call/415-555-1234', 'https://docs.rs/tokio/1.41.1/tokio/'))
+    expect(received.map((x) => x.body)).toEqual([{ links: ['https://example.com/share', 'https://example.com/users', 'https://example.com/call', 'https://docs.rs/tokio/1.41.1/tokio/'] }])
   })
 
   it('still answers give_thanks {domain}, unlisted, as one link', async () => {

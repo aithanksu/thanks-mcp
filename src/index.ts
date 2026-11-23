@@ -122,7 +122,8 @@ const decode = (s: string) => {
   }
 }
 const secretPart = (seg: string) =>
-  UUID.test(seg) || EMAIL.test(seg) || seg.split(/[-_.~:+=,!*'()@$;]/).some((p) => p.length >= 16 && /[a-z]/i.test(p) && /\d/.test(p))
+  UUID.test(seg) || EMAIL.test(seg) || /\d{6}/.test(seg) || (/^[\d\s-]+$/.test(seg) && (seg.match(/\d/g)?.length ?? 0) >= 9) ||
+  seg.split(/[-_.~:+=,!*'()@$;]/).some((p) => p.length >= 16 && /[a-z]/i.test(p) && /\d/.test(p))
 export function safePath(pathname: string): string {
   const raw = pathname.split('/')
   for (let i = 1; i < raw.length; i++) {

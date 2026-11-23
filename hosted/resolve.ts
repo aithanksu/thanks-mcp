@@ -101,9 +101,12 @@ export function resolveRef(input: unknown): Resolved | Rejected {
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
 const EMAIL = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i
 
-/** A path part that is an id, a token or an email: a UUID, 16 or more characters mixing letters and digits, or an address. */
+/**
+ * A path part that is an id, a token or an email: a UUID, an address, 16 or more characters mixing letters and digits,
+ * a run of 6 or more digits anywhere in it (ORD1234567, u12345678), or 9 or more digits split by dashes or spaces (415-555-1234).
+ */
 function secretPart(seg: string): boolean {
-  if (UUID.test(seg) || EMAIL.test(seg)) return true
+  if (UUID.test(seg) || EMAIL.test(seg) || /\d{6}/.test(seg) || (/^[\d\s-]+$/.test(seg) && (seg.match(/\d/g)?.length ?? 0) >= 9)) return true
   return seg.split(/[-_.~:+=,!*'()@$;]/).some((p) => p.length >= 16 && /[a-z]/i.test(p) && /\d/.test(p))
 }
 
