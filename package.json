@@ -1,7 +1,7 @@
 {
-  "name": "@zenx-thanks/mcp",
-  "version": "0.1.0",
-  "description": "The Thanks MCP server: one tool, say_thanks, that sends public URLs or package names, an optional public why and the task kind, and nothing else.",
+  "name": "@thanks-ai/mcp",
+  "version": "0.3.0",
+  "description": "The Thanks AI MCP server: one tool, say_thanks, that sends the public links that helped your agent, each cut to scheme, host and path on your machine, and nothing else.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -32,7 +32,7 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "test": "vitest run",
+    "test": "vitest run && node --test src/thanks-gate.hook-test.mjs",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

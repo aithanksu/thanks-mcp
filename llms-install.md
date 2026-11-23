@@ -28,4 +28,4 @@ Ask: "Thank https://docs.python.org/3/library/json.html for this task." The agen
 
 ## What it sends
 
-Only the public URLs or package names it thanks, an optional short public note, and the task kind. Never prompts, code, files or anything from the conversation.
+Only the public links it thanks, as `{"links": [...]}`. Never prompts, code, files or anything from the conversation. Details: COLLECTION.md in https://github.com/aithanksu/thanks-mcp.
