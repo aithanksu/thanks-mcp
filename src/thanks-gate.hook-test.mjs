@@ -20,11 +20,19 @@ function stopAfter(tool, camel = false) {
   return run('stop', { session_id: session })
 }
 
-const COUNT = ['WebFetch', 'WebSearch', 'web_fetch', 'web_search', 'mcp__fetch__fetch', 'mcp__brave__web_search', 'mcp__exa__web_fetch',
-  'mcp__browser__fetch_url', 'mcp__reader__read_url', 'mcp__bu__browse', 'mcp__firecrawl__scrape', 'mcp__firecrawl__crawl', 'fetch__fetch']
-const SKIP = ['mcp__claude_ai_Gmail__search_threads', 'mcp__claude_ai_Slack__slack_search_public', 'mcp__plugin_context-mode_context-mode__ctx_search',
-  'mcp__plugin_context-mode_context-mode__ctx_fetch_and_index', 'mcp__notion__notion-search', 'mcp__linear__search_issues', 'mcp__docs__search_docs',
-  'mcp__x__fetch_messages', 'mcp__x__browser_screenshot', 'Read', 'Grep', 'Bash', 'webfetch', 'mcp__thanks__say_thanks']
+const COUNT = ['WebFetch', 'WebSearch', 'web_fetch', 'web_search', 'mcp__fetch__fetch', 'fetch__fetch', 'mcp__browser__fetch_url',
+  'mcp__reader__read_url', 'mcp__bu__browse', 'mcp__phosphor__web_read', 'mcp__plugin_context-mode_context-mode__ctx_fetch_and_index',
+  'mcp__playwright__browser_navigate', 'mcp__cua__browser_navigate', 'mcp__puppeteer__puppeteer_navigate',
+  'mcp__firecrawl__firecrawl_scrape', 'mcp__firecrawl-mcp__firecrawl_search', 'mcp__firecrawl__firecrawl_crawl',
+  'mcp__brave-search__brave_web_search', 'mcp__exa__web_search_exa', 'mcp__exa__crawling_exa', 'mcp__exa__get_code_context_exa',
+  'mcp__tavily__tavily-search', 'mcp__tavily__tavily-extract', 'mcp__perplexity__perplexity_ask', 'mcp__context7__get-library-docs',
+  'mcp__context7__query-docs', 'mcp__deepwiki__read_wiki_contents', 'firecrawl__firecrawl_scrape']
+const SKIP = ['mcp__claude_ai_Gmail__search_threads', 'mcp__claude_ai_Gmail__get_thread', 'mcp__claude_ai_Slack__slack_search_public',
+  'mcp__claude_ai_Slack__slack_search_public_and_private', 'mcp__plugin_context-mode_context-mode__ctx_search',
+  'mcp__plugin_context-mode_context-mode__ctx_execute', 'mcp__plugin_context-mode_context-mode__ctx_batch_execute',
+  'mcp__notion__notion-search', 'mcp__notion__notion-fetch', 'mcp__linear__search_issues', 'mcp__docs__search_docs',
+  'mcp__claude_ai_Vercel__web_fetch_vercel_url', 'mcp__x__fetch_messages', 'mcp__x__browser_screenshot', 'mcp__x__browser_click',
+  'Read', 'Grep', 'Bash', 'webfetch', 'fetch', 'browser_navigate', 'mcp__thanks__say_thanks']
 
 test('web read tools count as a source', () => {
   for (const tool of COUNT) assert.match(stopAfter(tool), /"decision":"block"/, tool)

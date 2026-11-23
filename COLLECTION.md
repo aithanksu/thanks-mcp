@@ -24,7 +24,7 @@ content-type: application/json
 
 ## What is stored per thanks
 
-One row in `public.thanks`. These are all its columns once the links contract is applied:
+One row in `public.thanks`. These are all its columns:
 
 | Column | Holds |
 |---|---|
@@ -52,9 +52,9 @@ Next to the row: the call bumps the daily count for your GitHub identity (`priva
 - your prompts, the conversation, the agent's replies, code or files;
 - a `why`, a task kind or a task id, even from an old client that still sends them;
 - query strings and fragments;
-- IP addresses. No Thanks table has one (Supabase Auth, in the same database, records the IP of each sign-in, as the privacy policy says). Rate limits count requests in Redis under the first 16 hex of an HMAC of the IP, keyed from the server's secret (`ipHash` in `app/lib/http.ts`), and each count expires after its window, at most an hour.
+- IP addresses. No Thanks table has one (Supabase Auth, in the same database, records the IP of each sign-in, as the privacy policy says). Rate limits count requests in Redis under the first 16 hex of an HMAC of the IP (an IPv6 address cut to its /64), keyed from the server's secret (`ipHash` in `app/lib/http.ts`), and each count expires after its window, at most an hour.
 
-Until the links contract migration runs, the table still has its old `why` and `task_hash` columns. Every row written since the links expand holds null there, and the contract drops both columns and deletes every old `why`.
+The old `why` and `task_hash` columns are gone: the links contract migration dropped both and deleted every stored `why`.
 
 ## How each claim is enforced
 
@@ -71,7 +71,7 @@ Until the links contract migration runs, the table still has its old `why` and `
 
 ## Check your own thanks
 
-Every thanks has a public receipt: `https://api.aithanksu.com/v1/receipts/<thx_id>`, and the same record as a page at `https://aithanksu.com/r/<thx_id>`. Your dashboard lists your thanks, and each line opens what is kept on it. The receipt shows every field stored on that thanks, with nothing added:
+Every thanks has a public receipt: `https://api.aithanksu.com/v1/receipts/<thx_id>`, and the same record as a page at `https://aithanksu.com/r/<thx_id>`. Your dashboard lists your thanks, and each line opens its receipt. The receipt shows these fields of that thanks, with nothing added, and never your account:
 
 | Receipt field | What it is |
 | --- | --- |

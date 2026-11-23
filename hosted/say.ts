@@ -1,4 +1,4 @@
-// The hosted server's code at https://app.aithanksu.com/mcp, copied from the Thanks app (app/lib/say.ts).
+// The hosted server's code at https://mcp.aithanksu.com/mcp, copied from the Thanks app (app/lib/say.ts).
 // Reference only: it is not built here. Imports starting with @/ are app internals.
 import { db } from './db'
 import { publicOrigin, SITE_HOST } from './hosts'
@@ -98,7 +98,7 @@ export function sayLine(r: ThanksResult, agent: string): string {
 /** Records the thanks for the key. Calls the database even when every link was skipped: it checks the key. */
 export async function say(hash: Buffer, body: ThanksBody): Promise<{ agent: string; result: ThanksResult } | 'unauthorized'> {
   const p = plan(body)
-  // The task fields stay in the signature for the code still on main; this code sends neither.
+  // say_thanks keeps its old four-argument signature (20261122000000_links_expand); the task fields are always null.
   const { data, error } = await db().rpc('say_thanks', { p_key_hash: pgBytea(hash), p_items: p.items, p_task_kind: null, p_task_id: null })
   if (error) throw new Error(`say_thanks: ${error.message}`)
   const out = data as SayResult

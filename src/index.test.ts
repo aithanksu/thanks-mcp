@@ -94,6 +94,20 @@ describe('the same prompt and schema as the hosted server', () => {
       expect(t).toMatch(/^export const MAX_LINK = 2048$/m)
     }
   })
+
+  it('carries one version everywhere it is written', () => {
+    const local = readFileSync(SERVER, 'utf8')
+    expect(local).toMatch(new RegExp(`^const VERSION = '${VERSION}'$`, 'm'))
+    expect(readFileSync(HOSTED!, 'utf8')).toMatch(new RegExp(`^  version: '${VERSION}',$`, 'm'))
+    const json = (rel: string) => {
+      const f = fileURLToPath(new URL(rel, import.meta.url))
+      return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null
+    }
+    expect(json('../plugin/.claude-plugin/plugin.json').version).toBe(VERSION)
+    // The registry entry lives in the monorepo only.
+    const registry = json('../../../registry/server.json')
+    if (registry) expect([registry.version, registry.title]).toEqual([VERSION, 'Thanks AI'])
+  })
 })
 
 describe('thanks MCP server', () => {

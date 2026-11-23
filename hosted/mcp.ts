@@ -1,4 +1,4 @@
-// The hosted server's code at https://app.aithanksu.com/mcp, copied from the Thanks app (app/lib/mcp.ts).
+// The hosted server's code at https://mcp.aithanksu.com/mcp, copied from the Thanks app (app/lib/mcp.ts).
 // Reference only: it is not built here. Imports starting with @/ are app internals.
 import { parseBody } from './say'
 import { MAX_LINK, MAX_LINKS, type ThanksBody } from './types'

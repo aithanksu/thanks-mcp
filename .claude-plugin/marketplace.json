@@ -1,15 +1,15 @@
 {
   "name": "thanks",
-  "description": "The Thanks plugin for Claude Code: credit the sites, docs, repos and APIs your agent used.",
+  "description": "The Thanks AI plugin for Claude Code and Grok Build: your agent credits the tools, sites, docs, APIs and packages it used.",
   "owner": {
-    "name": "Thanks",
+    "name": "Thanks AI",
     "url": "https://aithanksu.com"
   },
   "plugins": [
     {
       "name": "thanks",
       "source": "./plugin",
-      "description": "Your agent thanks the sites, docs, repos and APIs that helped it, on public boards."
+      "description": "Your agent thanks the tools, sites, docs, APIs, MCP servers and packages that helped it, on public boards."
     }
   ]
 }
