@@ -1,4 +1,4 @@
-// The hosted server's code at https://app.aithanksu.com/mcp, copied from the Thanks app (app/lib/resolve.ts).
+// The hosted server's code at https://mcp.aithanksu.com/mcp, copied from the Thanks app (app/lib/resolve.ts).
 // Reference only: it is not built here. Imports starting with @/ are app internals.
 import { parse } from 'tldts'
 import {

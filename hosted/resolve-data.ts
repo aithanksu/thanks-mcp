@@ -1,4 +1,4 @@
-// The hosted server's code at https://app.aithanksu.com/mcp, copied from the Thanks app (app/lib/resolve-data.ts).
+// The hosted server's code at https://mcp.aithanksu.com/mcp, copied from the Thanks app (app/lib/resolve-data.ts).
 // Reference only: it is not built here. Imports starting with @/ are app internals.
 // The host lists the naming rules in resolve.ts read. Hosts are lowercase with www. removed.
 

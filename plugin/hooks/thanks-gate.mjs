@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Asks the agent to say thanks when a task read outside sources and say_thanks was not called.
 //   record (PostToolUse): counts web read tools per session: WebFetch, WebSearch, web_fetch, web_search, and
-//                         MCP tools whose own name is fetch, web_fetch, web_search, fetch_url, read_url, browse,
-//                         scrape or crawl. Mail, chat, notes and local search tools never count.
+//                         MCP tools whose own name is on the WEB list below (fetch servers, browsers, Firecrawl,
+//                         Brave, Exa, Tavily, Perplexity, Context7, DeepWiki, context-mode's ctx_fetch_and_index).
+//                         Mail, chat, notes and local search tools never count.
 //   stop   (Stop):        blocks the stop once per new batch of sources and asks for the thanks.
 // Works in Claude Code and Grok Build: reads both input shapes (snake_case and camelCase) and both
 // MCP tool names (mcp__server__tool and server__tool). Keeps a small counter file per session in the
@@ -12,8 +13,19 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const THANKS = /thanks__(say|give)_thanks$/
-// An allow-list, never a pattern like __.*search: a Gmail, Slack or local index search reads no public source.
-const SOURCE = /^(WebFetch|WebSearch|web_fetch|web_search)$|__(fetch|web_fetch|web_search|fetch_url|read_url|browse|scrape|crawl)$/
+// An allow-list of exact tool names, never a pattern like __.*search: a Gmail, Slack or local index search reads
+// no public source. An MCP tool counts by its own name, the part after the last __.
+const WEB = [
+  'fetch', 'web_fetch', 'web_search', 'fetch_url', 'read_url', 'web_read', 'browse', 'scrape', 'crawl',
+  'ctx_fetch_and_index', 'browser_navigate', 'puppeteer_navigate', 'playwright_navigate',
+  'firecrawl_scrape', 'firecrawl_search', 'firecrawl_crawl', 'firecrawl_map', 'firecrawl_extract',
+  'brave_web_search', 'brave_news_search', 'web_search_exa', 'crawling_exa', 'get_code_context_exa',
+  'tavily-search', 'tavily-extract', 'tavily-crawl', 'tavily_search', 'tavily_extract',
+  'perplexity_search', 'perplexity_ask', 'perplexity_research', 'get-library-docs', 'query-docs',
+  'read_wiki_contents', 'read_wiki_structure',
+]
+const BUILT_IN = new Set(['WebFetch', 'WebSearch', 'web_fetch', 'web_search'])
+const isSource = (tool) => BUILT_IN.has(tool) || (tool.includes('__') && WEB.includes(tool.slice(tool.lastIndexOf('__') + 2)))
 
 function main() {
   if (process.env.THANKS_GATE === 'off') return
@@ -28,7 +40,7 @@ function main() {
   if (process.argv[2] === 'record') {
     const tool = String(input.tool_name ?? input.toolName ?? '')
     if (THANKS.test(tool)) { s.since = 0; save() }
-    else if (SOURCE.test(tool)) { s.since++; s.total++; save() }
+    else if (isSource(tool)) { s.since++; s.total++; save() }
     return
   }
 
